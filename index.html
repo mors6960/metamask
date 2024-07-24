@@ -29,17 +29,10 @@
   <button onclick="connect()">Connect</button>
   <button onclick="addChain()">Add Chain</button>
 
-  <script src="https://cdn.jsdelivr.net/npm/metamask-sdk@latest/dist/metamask-sdk.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@metamask/sdk@latest/dist/metamask-sdk.min.js"></script>
   <script>
-    let provider;
-    const defaultChainId = '0x3E5'; // Example chain ID in hex
-    const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Example RPC URL
-    const defaultBlockExplorerUrls = 'https://explorer.5ire.network/'; // Example block explorer URL
-    const defaultCurrentSymbol = '5IRE'; // Example symbol
-    const defaultChainName = '5ireChain';
-
     // Initialize MetaMask SDK
-    const sdk = new MetaMaskSDK.MetaMaskSDK({
+    const sdk = new MetaMaskSDK({
       dappMetadata: {
         name: "MetaMask Connectivity",
         url: window.location.host,
@@ -49,6 +42,15 @@
       }
     });
 
+    let provider;
+    const defaultChainId = '0x232F'; // Example chain ID in hex
+    const defaultRpcUrl = 'https://rpc-testnet-nodes.shidoscan.com'; // Example RPC URL
+    const defaultBlockExplorerUrls = 'https://shidoscan.com'; // Example block explorer URL
+    const defaultCurrentSymbol = 'SHIDO'; // Example symbol
+    const defaultChainName = 'Shido';
+
+    var accounts;
+
     // Connect with MetaMask
     async function connect() {
       try {
@@ -56,6 +58,8 @@
         provider = sdk.getProvider();
         console.log('Connected', res);
         updateStatus('Connected');
+
+        accounts = res;
 
         // Check and switch to default chain
         const currentChainId = await provider.request({ method: 'eth_chainId' });
@@ -104,7 +108,7 @@
               chainName: defaultChainName,
               blockExplorerUrls: [defaultBlockExplorerUrls],
               nativeCurrency: {
-                name: '5ire',
+                name: defaultCurrentSymbol,
                 symbol: defaultCurrentSymbol,
                 decimals: 18,
               },
