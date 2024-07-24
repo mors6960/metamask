@@ -1,125 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetaMask Integration</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-      margin: 0;
-      padding: 20px;
-    }
-    #status {
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-right: 10px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaMask Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-  <h1>MetaMask Integration</h1>
-  <div id="status">Status: Not Connected</div>
-  <button onclick="connect()">Connect</button>
-  <button onclick="addChain()">Add Ethereum Chain</button>
+    <h1>MetaMask Integration</h1>
+    <button id="connectButton">Connect MetaMask</button>
+    <button id="addNetworkButton">Add Network</button>
+    <button id="switchNetworkButton">Switch Network</button>
 
-  <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
-  <script>
-    const sdk = new MetaMaskSDK.MetaMaskSDK({
-      dappMetadata: {
-        name: "METAMASK CONNECTIVITY",
-        url: window.location.host,
-      },
-      logging: {
-        sdk: false,
-      }
-    });
+    <script>
+        // Constants
+        const defaultChainId = '0x3E5'; // Default chain ID
+        const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Default RPC URL
+        const defaultBlockExplorerUrls = 'https://explorer.5ire.network';
+        const defaultCurrentSymbol = '5ire';
+        const defaultChainName = '5ireChain';
 
-    let provider;
-    const defaultChainId = '0x3E5'; // Default chain ID
-const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Default RPC URL
-const defaultBlockExplorerUrls = 'https://qa-http-nodes.5ire.network/';
-const defaultCurrentSymbol = '5ire';
-const defaultChainName = '5ireChain';
-
-    var accounts;
-
-    //<---------CONNECT WITH METAMASK----------------------->
-    async function connect() {
-      try {
-        const res = await sdk.connect();
-        provider = sdk.getProvider();
-        console.log('request data', res);
-        updateStatus(res);
-
-        accounts = res;
-
-        // Check and switch to default chain
-        const currentChainId = await provider.request({ method: 'eth_chainId' });
-        if (currentChainId !== defaultChainId) {
-          await switchToDefaultChain();
-        }
-      } catch (e) {
-        console.log('request accounts ERR', e);
-        updateStatus('Connection Failed');
-      }
-    }
-
-    function updateStatus(text) {
-      document.getElementById('status').innerText = `Status: ${text}`;
-    }
-
-    // <---------------------Switch to default chain------------------>
-    async function switchToDefaultChain() {
-      try {
-        await provider.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: defaultChainId }],
-        });
-        updateStatus('Switched to Default Chain');
-      } catch (switchError) {
-        // This error code indicates that the chain has not been added to MetaMask
-        if (switchError.code === 4902) {
-            // Add the default chain if it's not available in MetaMask
-            await addChain();
-        } else {
-            console.log('SWITCH ERR', switchError);
-            updateStatus('Switch Chain Failed');
-        }
-      }
-    }
-
-    // <-----------------------ADD CHAIN------------------>
-    async function addChain() {
-      try {
-        await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-        {
+  // Updated function to add a network to MetaMask
+async function addNetwork() {
+  if (window.ethereum) {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
           chainId: defaultChainId,
           chainName: defaultChainName,
-          blockExplorerUrls: [defaultBlockExplorerUrls],
-          nativeCurrency: { 
-            name: '5ire', // Name of the currency
-            symbol: '5ire',     // Symbol of the currency (uppercase to avoid confusion)
-            decimals: 18        // Number of decimals
-          },
           rpcUrls: [defaultRpcUrl],
-        },
-      ],
-        });
-        updateStatus('Chain Added');
-      } catch (e) {
-        console.log('ADD ERR', e);
-        updateStatus('Add Chain Failed');
-      }
+          blockExplorerUrls: [defaultBlockExplorerUrls],
+          nativeCurrency: {
+            name: defaultChainName,
+            symbol: defaultCurrentSymbol,
+            decimals: 18
+          }
+        }]
+      });
+      alert('Network added to MetaMask');
+    } catch (error) {
+      console.error('Failed to add network:', error);
+      alert('Failed to add network: ' + error.message);
     }
-  </script>
+  } else {
+    alert('MetaMask is not installed');
+  }
+}
+
+// Updated function to switch to a specific network in MetaMask
+async function switchNetwork() {
+  if (window.ethereum) {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: defaultChainId }],
+      });
+      alert('Network switched to: ' + defaultChainName);
+    } catch (error) {
+      console.error('Failed to switch network:', error);
+      alert('Failed to switch network: ' + error.message);
+    }
+  } else {
+    alert('MetaMask is not installed');
+  }
+}
+
+
+        // Function to connect MetaMask wallet
+        async function connectMetaMask() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    alert('Connected account: ' + accounts[0]);
+                } catch (error) {
+                    console.error('Failed to connect MetaMask:', error);
+                    alert('Failed to connect MetaMask');
+                }
+            } else {
+                alert('MetaMask is not installed');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('connectButton').addEventListener('click', connectMetaMask);
+        document.getElementById('addNetworkButton').addEventListener('click', addNetwork);
+        document.getElementById('switchNetworkButton').addEventListener('click', switchNetwork);
+    </script>
 </body>
 </html>
