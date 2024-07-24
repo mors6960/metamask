@@ -29,8 +29,16 @@
   <button onclick="connect()">Connect</button>
   <button onclick="addChain()">Add Chain</button>
 
-  <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/metamask-sdk@latest/dist/metamask-sdk.min.js"></script>
   <script>
+    let provider;
+    const defaultChainId = '0x3E5'; // Example chain ID in hex
+    const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Example RPC URL
+    const defaultBlockExplorerUrls = 'https://explorer.5ire.network/'; // Example block explorer URL
+    const defaultCurrentSymbol = '5IRE'; // Example symbol
+    const defaultChainName = '5ireChain';
+
+    // Initialize MetaMask SDK
     const sdk = new MetaMaskSDK.MetaMaskSDK({
       dappMetadata: {
         name: "MetaMask Connectivity",
@@ -41,15 +49,7 @@
       }
     });
 
-    let provider;
-    const defaultChainId = '0x3E5'; // Example chain ID in hex
-    const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Example RPC URL
-    const defaultBlockExplorerUrls = 'https://explorer.5ire.network/'; // Example block explorer URL
-    const defaultCurrentSymbol = '5IRE'; // Example symbol, should match with network
-    const defaultChainName = '5ireChain';
-
-    var accounts;
-
+    // Connect with MetaMask
     async function connect() {
       try {
         const res = await sdk.connect();
@@ -57,62 +57,65 @@
         console.log('Connected', res);
         updateStatus('Connected');
 
-        accounts = res;
-
         // Check and switch to default chain
         const currentChainId = await provider.request({ method: 'eth_chainId' });
+        console.log(`Current Chain ID: ${currentChainId}`);
         if (currentChainId !== defaultChainId) {
           await switchToDefaultChain();
         }
       } catch (e) {
         console.error('Connection Error', e);
-        updateStatus('Connection Failed');
+        updateStatus(`Connection Failed: ${e.message}`);
       }
     }
 
+    // Update status on the page
     function updateStatus(text) {
       document.getElementById('status').innerText = `Status: ${text}`;
     }
 
+    // Switch to the default chain
     async function switchToDefaultChain() {
       try {
         await provider.request({
-            method: 'wallet_switchEthereumChain',
-            params: [{ chainId: defaultChainId }],
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: defaultChainId }],
         });
         updateStatus('Switched to Default Chain');
       } catch (switchError) {
+        console.error('Switch Chain Error', switchError);
         if (switchError.code === 4902) {
-            await addChain();
+          // Chain not added, try to add it
+          await addChain();
         } else {
-            console.error('Switch Chain Error', switchError);
-            updateStatus('Switch Chain Failed');
+          updateStatus(`Switch Chain Failed: ${switchError.message}`);
         }
       }
     }
 
+    // Add the default chain
     async function addChain() {
       try {
         await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-        {
-          chainId: defaultChainId,
-          chainName: defaultChainName,
-          blockExplorerUrls: [defaultBlockExplorerUrls],
-          nativeCurrency: { 
-            name: '5ire', // Name of the currency
-            symbol: defaultCurrentSymbol, // Symbol of the currency
-            decimals: 18 // Number of decimals
-          },
-          rpcUrls: [defaultRpcUrl],
-        },
-      ],
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: defaultChainId,
+              chainName: defaultChainName,
+              blockExplorerUrls: [defaultBlockExplorerUrls],
+              nativeCurrency: {
+                name: '5ire',
+                symbol: defaultCurrentSymbol,
+                decimals: 18,
+              },
+              rpcUrls: [defaultRpcUrl],
+            },
+          ],
         });
         updateStatus('Chain Added');
       } catch (e) {
         console.error('Add Chain Error', e);
-        updateStatus('Add Chain Failed');
+        updateStatus(`Add Chain Failed: ${e.message}`);
       }
     }
   </script>
