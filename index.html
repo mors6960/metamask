@@ -27,13 +27,13 @@
   <h1>MetaMask Integration</h1>
   <div id="status">Status: Not Connected</div>
   <button onclick="connect()">Connect</button>
-  <button onclick="addChain()">Add Ethereum Chain</button>
+  <button onclick="addChain()">Add Chain</button>
 
   <script src="https://c0f4f41c-2f55-4863-921b-sdk-docs.github.io/cdn/metamask-sdk.js"></script>
   <script>
     const sdk = new MetaMaskSDK.MetaMaskSDK({
       dappMetadata: {
-        name: "METAMASK CONNECTIVITY",
+        name: "MetaMask Connectivity",
         url: window.location.host,
       },
       logging: {
@@ -42,21 +42,20 @@
     });
 
     let provider;
-    const defaultChainId = '0x3E5'; // Default chain ID
-const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Default RPC URL
-const defaultBlockExplorerUrls = 'https://qa-http-nodes.5ire.network/';
-const defaultCurrentSymbol = '5ire';
-const defaultChainName = '5ireChain';
+    const defaultChainId = '0x3E5'; // Example chain ID in hex
+    const defaultRpcUrl = 'https://rpc-testnet.5ire.network'; // Example RPC URL
+    const defaultBlockExplorerUrls = 'https://explorer.5ire.network/'; // Example block explorer URL
+    const defaultCurrentSymbol = '5IRE'; // Example symbol, should match with network
+    const defaultChainName = '5ireChain';
 
     var accounts;
 
-    //<---------CONNECT WITH METAMASK----------------------->
     async function connect() {
       try {
         const res = await sdk.connect();
         provider = sdk.getProvider();
-        console.log('request data', res);
-        updateStatus(res);
+        console.log('Connected', res);
+        updateStatus('Connected');
 
         accounts = res;
 
@@ -66,7 +65,7 @@ const defaultChainName = '5ireChain';
           await switchToDefaultChain();
         }
       } catch (e) {
-        console.log('request accounts ERR', e);
+        console.error('Connection Error', e);
         updateStatus('Connection Failed');
       }
     }
@@ -75,7 +74,6 @@ const defaultChainName = '5ireChain';
       document.getElementById('status').innerText = `Status: ${text}`;
     }
 
-    // <---------------------Switch to default chain------------------>
     async function switchToDefaultChain() {
       try {
         await provider.request({
@@ -84,18 +82,15 @@ const defaultChainName = '5ireChain';
         });
         updateStatus('Switched to Default Chain');
       } catch (switchError) {
-        // This error code indicates that the chain has not been added to MetaMask
         if (switchError.code === 4902) {
-            // Add the default chain if it's not available in MetaMask
             await addChain();
         } else {
-            console.log('SWITCH ERR', switchError);
+            console.error('Switch Chain Error', switchError);
             updateStatus('Switch Chain Failed');
         }
       }
     }
 
-    // <-----------------------ADD CHAIN------------------>
     async function addChain() {
       try {
         await provider.request({
@@ -107,8 +102,8 @@ const defaultChainName = '5ireChain';
           blockExplorerUrls: [defaultBlockExplorerUrls],
           nativeCurrency: { 
             name: '5ire', // Name of the currency
-            symbol: '5ire',     // Symbol of the currency (uppercase to avoid confusion)
-            decimals: 18        // Number of decimals
+            symbol: defaultCurrentSymbol, // Symbol of the currency
+            decimals: 18 // Number of decimals
           },
           rpcUrls: [defaultRpcUrl],
         },
@@ -116,7 +111,7 @@ const defaultChainName = '5ireChain';
         });
         updateStatus('Chain Added');
       } catch (e) {
-        console.log('ADD ERR', e);
+        console.error('Add Chain Error', e);
         updateStatus('Add Chain Failed');
       }
     }
