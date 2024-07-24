@@ -24,6 +24,7 @@
     <button id="connectButton">Connect MetaMask</button>
     <button id="addNetworkButton">Add Network</button>
     <button id="switchNetworkButton">Switch Network</button>
+    <button id="disconnectButton">Disconnect MetaMask</button>
 
     <script>
         // Constants
@@ -33,52 +34,51 @@
         const defaultCurrentSymbol = '5ire';
         const defaultChainName = '5ireChain';
 
-  // Updated function to add a network to MetaMask
-async function addNetwork() {
-  if (window.ethereum) {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [{
-          chainId: defaultChainId,
-          chainName: defaultChainName,
-          rpcUrls: [defaultRpcUrl],
-          blockExplorerUrls: [defaultBlockExplorerUrls],
-          nativeCurrency: {
-            name: defaultChainName,
-            symbol: defaultCurrentSymbol,
-            decimals: 18
-          }
-        }]
-      });
-      alert('Network added to MetaMask');
-    } catch (error) {
-      console.error('Failed to add network:', error);
-      alert('Failed to add network: ' + error.message);
-    }
-  } else {
-    alert('MetaMask is not installed');
-  }
-}
+        // Updated function to add a network to MetaMask
+        async function addNetwork() {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: defaultChainId,
+                            chainName: defaultChainName,
+                            rpcUrls: [defaultRpcUrl],
+                            blockExplorerUrls: [defaultBlockExplorerUrls],
+                            nativeCurrency: {
+                                name: defaultChainName,
+                                symbol: defaultCurrentSymbol,
+                                decimals: 18
+                            }
+                        }]
+                    });
+                    alert('Network added to MetaMask');
+                } catch (error) {
+                    console.error('Failed to add network:', error);
+                    alert('Failed to add network: ' + error.message);
+                }
+            } else {
+                alert('MetaMask is not installed');
+            }
+        }
 
-// Updated function to switch to a specific network in MetaMask
-async function switchNetwork() {
-  if (window.ethereum) {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: defaultChainId }],
-      });
-      alert('Network switched to: ' + defaultChainName);
-    } catch (error) {
-      console.error('Failed to switch network:', error);
-      alert('Failed to switch network: ' + error.message);
-    }
-  } else {
-    alert('MetaMask is not installed');
-  }
-}
-
+        // Updated function to switch to a specific network in MetaMask
+        async function switchNetwork() {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: defaultChainId }],
+                    });
+                    alert('Network switched to: ' + defaultChainName);
+                } catch (error) {
+                    console.error('Failed to switch network:', error);
+                    alert('Failed to switch network: ' + error.message);
+                }
+            } else {
+                alert('MetaMask is not installed');
+            }
+        }
 
         // Function to connect MetaMask wallet
         async function connectMetaMask() {
@@ -95,10 +95,20 @@ async function switchNetwork() {
             }
         }
 
+        // Function to disconnect MetaMask
+        function disconnectMetaMask() {
+            // MetaMask doesn't have a direct disconnect method.
+            // Typically, you handle disconnect by clearing the application state.
+            // This example just alerts and simulates a disconnection.
+            alert('MetaMask account disconnected. Please refresh the page to reconnect.');
+            // You may also want to clear any user-related state here
+        }
+
         // Event listeners
         document.getElementById('connectButton').addEventListener('click', connectMetaMask);
         document.getElementById('addNetworkButton').addEventListener('click', addNetwork);
         document.getElementById('switchNetworkButton').addEventListener('click', switchNetwork);
+        document.getElementById('disconnectButton').addEventListener('click', disconnectMetaMask);
     </script>
 </body>
 </html>
